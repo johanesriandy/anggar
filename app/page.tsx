@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function Home() {
@@ -12,12 +12,12 @@ export default function Home() {
     try {
       await signOut();
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
   const handleSignIn = () => {
-    router.push('/login');
+    router.push("/login");
   };
 
   if (loading) {
@@ -41,18 +41,25 @@ export default function Home() {
           height={20}
           priority
         />
-        
+
         {user ? (
           <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
             <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
               Welcome back!
             </h1>
             <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-              You are signed in as <span className="font-medium text-zinc-950 dark:text-zinc-50">{user.email}</span>
+              You are signed in as{" "}
+              <span className="font-medium text-zinc-950 dark:text-zinc-50">
+                {user.email}
+              </span>
             </p>
             <div className="rounded-lg bg-zinc-100 p-4 dark:bg-zinc-900">
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">User ID:</p>
-              <p className="font-mono text-xs text-zinc-900 dark:text-zinc-50 break-all">{user.uid}</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                User Email:
+              </p>
+              <p className="font-mono text-xs text-zinc-900 dark:text-zinc-50 break-all">
+                {user.email}
+              </p>
             </div>
           </div>
         ) : (
@@ -61,11 +68,12 @@ export default function Home() {
               Welcome to Anggar
             </h1>
             <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-              A Next.js application with Firebase Authentication. Sign in to get started.
+              A Next.js application with Firebase Authentication. Sign in to get
+              started.
             </p>
           </div>
         )}
-        
+
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           {user ? (
             <button
