@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { getFirebaseErrorMessage } from "@/lib/firebase/errors";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,16 +15,52 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
+import { FirebaseError } from "firebase/app";
+
+// Zod schemas for validation
+const signInSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+const signUpSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState("");
   const router = useRouter();
   const { signIn, signUp, user, loading: authLoading } = useAuth();
+
+  const form = useForm({
+    defaultValues: isSignUp
+      ? { email: "", password: "", confirmPassword: "" }
+      : { email: "", password: "" },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        if (isSignUp) {
+          await signUp(value.email, value.password);
+        } else {
+          await signIn(value.email, value.password);
+        }
+        router.push("/");
+      } catch (err: unknown) {
+        setFormError(getFirebaseErrorMessage(err as FirebaseError));
+      }
+    },
+    validators: {
+      onSubmit: isSignUp ? signUpSchema : signInSchema,
+    },
+  });
 
   // Redirect authenticated users to home page
   useEffect(() => {
@@ -46,32 +83,10 @@ export default function LoginPage() {
     return null;
   }
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      if (isSignUp) {
-        if (password !== confirmPassword) {
-          setError("Passwords do not match");
-          setLoading(false);
-          return;
-        }
-        await signUp(email, password);
-      } else {
-        await signIn(email, password);
-      }
-      router.push("/");
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An error occurred. Please try again.");
-      }
-    } finally {
-      setLoading(false);
-    }
+  const handleModeSwitch = () => {
+    setIsSignUp(!isSignUp);
+    setFormError("");
+    form.reset();
   };
 
   return (
@@ -120,65 +135,140 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-                  {error}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                form.handleSubmit();
+              }}
+              className="space-y-4"
+            >
+              {formError && (
+                <div
+                  id="form-error"
+                  className="rounded-md bg-destructive/15 p-3 text-sm text-destructive"
+                  role="alert"
+                  aria-live="polite"
+                >
+                  {formError}
                 </div>
               )}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
+              <form.Field
+                name="email"
+              >
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor={field.name}>Email</Label>
+                    <Input
+                      id={field.name}
+                      type="email"
+                      placeholder="you@example.com"
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                        // Clear field errors when user starts typing
+                        form.setFieldMeta(field.name, (prev) => ({
+                          ...prev,
+                          errors: [],
+                          isTouched: true,
+                        }));
+                      }}
+                      onBlur={field.handleBlur}
+                      disabled={form.state.isSubmitting}
+                      aria-describedby={formError ? "form-error" : undefined}
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                    {form.state.isSubmitted && field.state.meta.errors.length > 0 && (
+                      <div className="text-sm text-destructive" id={`${field.name}-error`}>
+                        {field.state.meta.errors.join(", ")}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </form.Field>
+              <form.Field
+                name="password"
+              >
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor={field.name}>Password</Label>
+                    <Input
+                      id={field.name}
+                      type="password"
+                      placeholder="••••••••"
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                        // Clear field errors when user starts typing
+                        form.setFieldMeta(field.name, (prev) => ({
+                          ...prev,
+                          errors: [],
+                          isTouched: true,
+                        }));
+                      }}
+                      onBlur={field.handleBlur}
+                      disabled={form.state.isSubmitting}
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                    {form.state.isSubmitted && field.state.meta.errors.length > 0 && (
+                      <div className="text-sm text-destructive" id={`${field.name}-error`}>
+                        {field.state.meta.errors.join(", ")}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </form.Field>
               {isSignUp && (
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
-                </div>
+                <form.Field
+                  name="confirmPassword"
+                >
+                  {(field) => (
+                    <div className="space-y-2">
+                      <Label htmlFor={field.name}>Confirm Password</Label>
+                      <Input
+                        id={field.name}
+                        type="password"
+                        placeholder="••••••••"
+                        value={field.state.value}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                          // Clear field errors when user starts typing
+                          form.setFieldMeta(field.name, (prev) => ({
+                            ...prev,
+                            errors: [],
+                            isTouched: true,
+                          }));
+                        }}
+                        onBlur={field.handleBlur}
+                        disabled={form.state.isSubmitting}
+                        aria-invalid={field.state.meta.errors.length > 0}
+                      />
+                      {form.state.isSubmitted && field.state.meta.errors.length > 0 && (
+                        <div className="text-sm text-destructive" id={`${field.name}-error`}>
+                          {field.state.meta.errors.join(", ")}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </form.Field>
               )}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading && <Spinner className="mr-2 h-4 w-4" />}
-                {isSignUp ? "Sign up" : "Sign in"}
-              </Button>
+              <form.Subscribe
+                selector={(state) => [state.canSubmit, state.isSubmitting]}
+              >
+                {([canSubmit, isSubmitting]) => (
+                  <Button type="submit" className="w-full" disabled={!canSubmit}>
+                    {isSubmitting && <Spinner className="mr-2 h-4 w-4" />}
+                    {isSignUp ? "Sign up" : "Sign in"}
+                  </Button>
+                )}
+              </form.Subscribe>
             </form>
             <div className="mt-4 text-center text-sm">
               <button
                 type="button"
-                onClick={() => {
-                  setIsSignUp(!isSignUp);
-                  setError("");
-                  setConfirmPassword("");
-                }}
+                onClick={handleModeSwitch}
                 className="text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
-                disabled={loading}
+                disabled={form.state.isSubmitting}
               >
                 {isSignUp
                   ? "Already have an account? Sign in"
