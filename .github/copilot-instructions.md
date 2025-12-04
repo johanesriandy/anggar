@@ -16,13 +16,13 @@ This is a Next.js 16 application built with:
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+- `npm run lint` - Run ESLint on all TypeScript and JavaScript files
 
 ## Code Style and Conventions
 
 ### TypeScript
 - Use strict TypeScript settings as configured in `tsconfig.json`
-- Target ES2017 with modern ESNext modules
+- Use ES2017 target with ESNext module system
 - Utilize path aliases with `@/*` for cleaner imports
 - Prefer explicit types for function parameters and return values
 - Use `type` for object shapes and `interface` for contracts
