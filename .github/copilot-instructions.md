@@ -43,7 +43,8 @@ This is a Next.js 16 application built with:
 
 ### File Naming
 - Use kebab-case for directories
-- Use PascalCase for React component files (`.tsx`)
+- Next.js special files (`page.tsx`, `layout.tsx`, `loading.tsx`, etc.) must use lowercase
+- Use PascalCase for custom React component files (`.tsx`)
 - Use lowercase for configuration files
 
 ### Component Structure
