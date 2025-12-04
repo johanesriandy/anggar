@@ -1,8 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app) with Firebase Authentication integrated.
+
+## Features
+
+- 🔐 Firebase Authentication (Email/Password)
+- 🎨 Tailwind CSS styling
+- 🌙 Dark mode support
+- ⚡ Next.js 16 with App Router
+- 📱 Responsive design
+
+## Firebase Setup
+
+Before running the application, you need to set up Firebase Authentication. Please follow the detailed instructions in [FIREBASE_SETUP.md](./FIREBASE_SETUP.md).
+
+Quick setup:
+1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+2. Enable Email/Password authentication
+3. Copy `.env.local.example` to `.env.local` and add your Firebase credentials
+4. Install dependencies and run the dev server
 
 ## Getting Started
 
-First, run the development server:
+First, install the dependencies:
+
+```bash
+npm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
