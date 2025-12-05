@@ -13,6 +13,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 Before running the application, you need to set up Firebase Authentication. Please follow the detailed instructions in [FIREBASE_SETUP.md](./FIREBASE_SETUP.md).
 
 Quick setup:
+
 1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
 2. Enable Email/Password authentication
 3. Copy `.env.local.example` to `.env.local` and add your Firebase credentials

@@ -19,11 +19,6 @@ import { useForm } from "@tanstack/react-form";
 import { signInSchema } from "@/lib/validation/auth";
 import { FirebaseError } from "firebase/app";
 
-// Zod schemas for validation
-// signInSchema is imported from `lib/validation/auth.ts`
-
-// signup schema moved to `app/signup/page.tsx`
-
 export default function LoginPage() {
   const [formError, setFormError] = useState("");
   const router = useRouter();
@@ -43,14 +38,12 @@ export default function LoginPage() {
     validators: { onSubmit: signInSchema },
   });
 
-  // Redirect authenticated users to home page
   useEffect(() => {
     if (!authLoading && user) {
       router.push("/");
     }
   }, [user, authLoading, router]);
 
-  // Show loading spinner while checking authentication
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -59,7 +52,6 @@ export default function LoginPage() {
     );
   }
 
-  // Don't render the login form if user is authenticated
   if (user) {
     return null;
   }
@@ -67,13 +59,11 @@ export default function LoginPage() {
   const handleModeSwitch = () => {
     setFormError("");
     form.reset();
-    // navigate to the signup page which has its own form and validation
     router.push("/signup");
   };
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      {/* Left Pane - Branding (Hidden on mobile/tablet) */}
       <div className="hidden flex-col justify-center bg-muted/50 p-8 lg:flex lg:p-12">
         <div className="mx-auto max-w-md space-y-6">
           <div className="flex items-center space-x-2">
@@ -104,7 +94,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right Pane - Login Form (Full width on mobile/tablet) */}
       <div className="flex min-h-screen items-center justify-center p-8 lg:min-h-0 lg:p-12">
         <Card className="w-full max-w-sm">
           <CardHeader className="space-y-1">
@@ -145,7 +134,6 @@ export default function LoginPage() {
                       value={field.state.value}
                       onChange={(e) => {
                         field.handleChange(e.target.value);
-                        // Clear field errors when user starts typing
                         form.setFieldMeta(field.name, (prev) => ({
                           ...prev,
                           errors: [],
@@ -180,7 +168,6 @@ export default function LoginPage() {
                       value={field.state.value}
                       onChange={(e) => {
                         field.handleChange(e.target.value);
-                        // Clear field errors when user starts typing
                         form.setFieldMeta(field.name, (prev) => ({
                           ...prev,
                           errors: [],
@@ -203,7 +190,7 @@ export default function LoginPage() {
                   </div>
                 )}
               </form.Field>
-              {/* Sign-in page doesn't require confirmPassword */}
+
               <form.Subscribe
                 selector={(state) => [state.canSubmit, state.isSubmitting]}
               >

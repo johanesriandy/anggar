@@ -19,8 +19,6 @@ import { useForm } from "@tanstack/react-form";
 import { signUpSchema } from "@/lib/validation/auth";
 import { FirebaseError } from "firebase/app";
 
-// signUpSchema is imported from `lib/validation/auth.ts`
-
 export default function SignupPage() {
   const router = useRouter();
   const { signUp, user, loading: authLoading } = useAuth();
@@ -40,7 +38,6 @@ export default function SignupPage() {
     validators: { onSubmit: signUpSchema },
   });
 
-  // Show loading spinner while checking authentication
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -49,7 +46,6 @@ export default function SignupPage() {
     );
   }
 
-  // Don't render the signup form if user is authenticated
   if (user) {
     return null;
   }

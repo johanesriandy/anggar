@@ -57,6 +57,7 @@ Note on historical guidelines (ID: 1000000) ⚠️
 In prior versions of this repository's style guide, we recommended using PascalCase for component filenames (e.g., `MyComponent.tsx`) under guideline ID: 1000000. We've intentionally migrated to a kebab-case filename convention (e.g., `my-component.tsx`) for component files to encourage consistency across directories and to match the existing file structure in the repository (e.g., `components/ui/button.tsx`, `components/ui/input.tsx`).
 
 Why we made this change:
+
 - Improves consistency with directory kebab-case and Next.js special files
 - Matches a wide range of open-source Next.js templates and tooling
 - Maintains readable file names when scanning directories
