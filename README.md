@@ -44,6 +44,14 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Code style updates
+
+We have standardized on kebab-case for component and TypeScript filenames. Historically, guideline ID: 1000000 recommended PascalCase for component file names. We've intentionally migrated to kebab-case for filenames (e.g., `components/ui/button.tsx`) while keeping component names in PascalCase (e.g., `export function Button() {}`). This change improves consistency across directories and aligns with Next.js file naming preferences.
+
+### Legacy/deprecated filenames
+
+Some legacy PascalCase component filenames may still exist as re-export aliases to preserve compatibility during migration (for example `contexts/AuthContext.tsx` re-exports from `contexts/auth-context.tsx`). These aliases are temporary and will be removed in a future cleanup once all imports reference kebab-case filenames. If you add new files, please use kebab-case for the file name and PascalCase for component identifiers.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

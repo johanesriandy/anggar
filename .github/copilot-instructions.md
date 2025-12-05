@@ -52,6 +52,21 @@ This is a Next.js 16 application built with:
 - Use kebab-case for custom React component files (`.tsx`) and TypeScript files (`.ts`)
 - Use lowercase for configuration files
 
+Note on historical guidelines (ID: 1000000) ⚠️
+
+In prior versions of this repository's style guide, we recommended using PascalCase for component filenames (e.g., `MyComponent.tsx`) under guideline ID: 1000000. We've intentionally migrated to a kebab-case filename convention (e.g., `my-component.tsx`) for component files to encourage consistency across directories and to match the existing file structure in the repository (e.g., `components/ui/button.tsx`, `components/ui/input.tsx`).
+
+Why we made this change:
+- Improves consistency with directory kebab-case and Next.js special files
+- Matches a wide range of open-source Next.js templates and tooling
+- Maintains readable file names when scanning directories
+
+Note: This change only applies to filenames and path-based imports. Component identifiers in code (the exported React component names) should remain `PascalCase` (e.g., `export function MyButton() {}`), which preserves React naming conventions.
+
+Legacy/deprecated filenames
+
+Some PascalCase filenames may still exist as re-export aliases for backward compatibility during the migration. For instance, `contexts/AuthContext.tsx` currently re-exports from `contexts/auth-context.tsx` to avoid large refactors in a single PR. These aliases are temporary; please import using kebab-case going forward, and we may remove aliases in a follow-up cleanup when all code references kebab-case paths.
+
 ### Component Structure
 
 - Keep components small and focused on a single responsibility

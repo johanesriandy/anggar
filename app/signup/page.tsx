@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { getFirebaseErrorMessage } from "@/lib/firebase/errors";
@@ -16,39 +16,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useForm } from "@tanstack/react-form";
-import { signInSchema } from "@/lib/validation/auth";
+import { signUpSchema } from "@/lib/validation/auth";
 import { FirebaseError } from "firebase/app";
 
-// Zod schemas for validation
-// signInSchema is imported from `lib/validation/auth.ts`
+// signUpSchema is imported from `lib/validation/auth.ts`
 
-// signup schema moved to `app/signup/page.tsx`
-
-export default function LoginPage() {
-  const [formError, setFormError] = useState("");
+export default function SignupPage() {
   const router = useRouter();
-  const { signIn, user, loading: authLoading } = useAuth();
+  const { signUp, user, loading: authLoading } = useAuth();
+  const [formError, setFormError] = useState("");
 
   const form = useForm({
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", confirmPassword: "" },
     onSubmit: async ({ value }) => {
       setFormError("");
       try {
-        await signIn(value.email, value.password);
+        await signUp(value.email, value.password);
         router.push("/");
       } catch (err: unknown) {
         setFormError(getFirebaseErrorMessage(err as FirebaseError));
       }
     },
-    validators: { onSubmit: signInSchema },
+    validators: { onSubmit: signUpSchema },
   });
-
-  // Redirect authenticated users to home page
-  useEffect(() => {
-    if (!authLoading && user) {
-      router.push("/");
-    }
-  }, [user, authLoading, router]);
 
   // Show loading spinner while checking authentication
   if (authLoading) {
@@ -59,21 +49,13 @@ export default function LoginPage() {
     );
   }
 
-  // Don't render the login form if user is authenticated
+  // Don't render the signup form if user is authenticated
   if (user) {
     return null;
   }
 
-  const handleModeSwitch = () => {
-    setFormError("");
-    form.reset();
-    // navigate to the signup page which has its own form and validation
-    router.push("/signup");
-  };
-
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      {/* Left Pane - Branding (Hidden on mobile/tablet) */}
       <div className="hidden flex-col justify-center bg-muted/50 p-8 lg:flex lg:p-12">
         <div className="mx-auto max-w-md space-y-6">
           <div className="flex items-center space-x-2">
@@ -95,24 +77,23 @@ export default function LoginPage() {
             <span className="text-xl font-bold">Anggar</span>
           </div>
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Sign up</h1>
             <p className="text-muted-foreground">
-              Sign in to your account to continue managing your finances and
-              tracking your expenses.
+              Create an account to start tracking your expenses and managing
+              your finances.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Right Pane - Login Form (Full width on mobile/tablet) */}
       <div className="flex min-h-screen items-center justify-center p-8 lg:min-h-0 lg:p-12">
         <Card className="w-full max-w-sm">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">
-              Sign in to your account
+              Create an account
             </CardTitle>
             <CardDescription className="text-center">
-              Enter your email and password below to sign in
+              Enter your email and a strong password to create your account.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -145,7 +126,6 @@ export default function LoginPage() {
                       value={field.state.value}
                       onChange={(e) => {
                         field.handleChange(e.target.value);
-                        // Clear field errors when user starts typing
                         form.setFieldMeta(field.name, (prev) => ({
                           ...prev,
                           errors: [],
@@ -180,7 +160,6 @@ export default function LoginPage() {
                       value={field.state.value}
                       onChange={(e) => {
                         field.handleChange(e.target.value);
-                        // Clear field errors when user starts typing
                         form.setFieldMeta(field.name, (prev) => ({
                           ...prev,
                           errors: [],
@@ -203,7 +182,39 @@ export default function LoginPage() {
                   </div>
                 )}
               </form.Field>
-              {/* Sign-in page doesn't require confirmPassword */}
+              <form.Field name="confirmPassword">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor={field.name}>Confirm Password</Label>
+                    <Input
+                      id={field.name}
+                      type="password"
+                      placeholder="••••••••"
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                        form.setFieldMeta(field.name, (prev) => ({
+                          ...prev,
+                          errors: [],
+                          isTouched: true,
+                        }));
+                      }}
+                      onBlur={field.handleBlur}
+                      disabled={form.state.isSubmitting}
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                    {form.state.isSubmitted &&
+                      field.state.meta.errors.length > 0 && (
+                        <div
+                          className="text-sm text-destructive"
+                          id={`${field.name}-error`}
+                        >
+                          {field.state.meta.errors.join(", ")}
+                        </div>
+                      )}
+                  </div>
+                )}
+              </form.Field>
               <form.Subscribe
                 selector={(state) => [state.canSubmit, state.isSubmitting]}
               >
@@ -214,7 +225,7 @@ export default function LoginPage() {
                     disabled={!canSubmit}
                   >
                     {isSubmitting && <Spinner className="mr-2 h-4 w-4" />}
-                    Sign in
+                    Sign up
                   </Button>
                 )}
               </form.Subscribe>
@@ -222,11 +233,11 @@ export default function LoginPage() {
             <div className="mt-4 text-center text-sm">
               <button
                 type="button"
-                onClick={handleModeSwitch}
+                onClick={() => router.push("/login")}
                 className="text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
                 disabled={form.state.isSubmitting}
               >
-                {"Don't have an account? Sign up"}
+                Already have an account? Sign in
               </button>
             </div>
           </CardContent>
